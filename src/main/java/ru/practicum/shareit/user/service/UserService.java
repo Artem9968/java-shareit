@@ -12,9 +12,10 @@ public interface UserService {
 
     User update(User user, Integer id);
 
-    User getById(int id);
+    User getById(Integer id);
 
-    Boolean deleteById(int id);
+    Boolean deleteById(Integer id);
+
 
 }
 

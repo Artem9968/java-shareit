@@ -38,4 +38,5 @@ public class ErrorHandler {
         log.error("Internal error", e);
         return new ErrorResponse("Internal server error");
     }
+
 }

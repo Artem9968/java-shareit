@@ -21,29 +21,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(User user) {
-        validate(user);
+        validateFields(user);
+        validateEmailUnique(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
-        log.info("user {} has been added", users.toString().toUpperCase());
+        log.info("User {} has been added", users.toString().toUpperCase());
         return user;
     }
 
     @Override
     public User update(User user, Integer id) {
-        user.setId(id);
-        validateEmail(user);
-        User oldUser = users.get(user.getId());
-        if (user.getName() != null) {
+        User oldUser = users.get(id);
+        if (oldUser == null) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+
+        // Обновляем только непустые поля
+        if (user.getName() != null && !user.getName().isBlank()) {
             oldUser.setName(user.getName());
         }
-        if (user.getEmail() != null) {
+        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+            validateEmailUnique(user);
             oldUser.setEmail(user.getEmail());
         }
         return oldUser;
     }
 
     @Override
-    public User getById(int id) {
+    public User getById(Integer id) {
         if (!users.containsKey(id)) {
             throw new NotFoundException("Пользователь не найден");
         }
@@ -51,7 +56,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Boolean deleteById(int id) {
+    public Boolean deleteById(Integer id) {
         if (users.containsKey(id)) {
             users.remove(id);
             return true;
@@ -60,37 +65,31 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private void validate(User user) {
-        if (user.getEmail() == null || !(user.getEmail().contains("@"))) {
-            throw new ValidationException("The user email must include @, should be without spaces " +
-                    "and shouldn't be blank");
+    private void validateFields(User user) {
+        if (user.getEmail() == null || !user.getEmail().contains("@")) {
+            throw new ValidationException("The user email must include '@', be non-blank and valid");
         }
-        if (user.getName() == null || user.getName().equals("")) {
-            throw new NotFoundException("The user name can't be empty or contains spaces");
-        }
-        for (User u : users.values()) {
-            if (u.getId() == user.getId()) {
-                continue;
-            }
-            if (u.getEmail().equals(user.getEmail())) {
-                throw new ConflictException("The user email is already exist");
-            }
+        if (user.getName() == null || user.getName().isBlank()) {
+            throw new ValidationException("The user name can't be empty or blank");
         }
     }
 
-    private void validateEmail(User user) {
+    private void validateEmailUnique(User user) {
         for (User u : users.values()) {
             if (u.getId() == user.getId()) {
                 continue;
             }
             if (u.getEmail().equals(user.getEmail())) {
-                throw new ConflictException("The user email is already exist");
+                throw new ConflictException("The user email already exists");
             }
         }
     }
 
     private int getNextId() {
-        int currentMaxId = users.keySet().stream().mapToInt(id -> id).max().orElse(0);
-        return ++currentMaxId;
+        return users.keySet().stream()
+                .mapToInt(Integer::intValue)
+                .max()
+                .orElse(0) + 1;
     }
 }
+

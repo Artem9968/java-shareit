@@ -12,11 +12,11 @@ public class UserMapper {
         );
     }
 
-    public static User toUser(UserDto user) {
+    public static User toUser(UserDto userDto) {
         return new User(
-                user.getId(),
-                user.getName(),
-                user.getEmail()
+                userDto.getId() != null ? userDto.getId() : 0,  // Защита от null
+                userDto.getName(),
+                userDto.getEmail()
         );
     }
 }
