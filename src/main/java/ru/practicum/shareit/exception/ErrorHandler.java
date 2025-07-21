@@ -39,4 +39,18 @@ public class ErrorHandler {
         return new ErrorResponse("Internal server error");
     }
 
+    // Дополнения из второго класса (без изменения существующего кода)
+    @ExceptionHandler(NotAvailableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleNotAvailableException(NotAvailableException e) {
+        log.warn("Not available: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(Throwable.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleGenericExceptions(Throwable e) {
+        log.warn("Unexpected error: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
 }
