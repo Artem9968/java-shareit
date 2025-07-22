@@ -1,42 +1,45 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Objects;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final Map<Integer, User> users = new HashMap<>();
+    private final UserRepository userRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Collection<User> findAll() {
-        return new ArrayList<>(users.values());
+        return userRepository.findAll();
     }
 
     @Override
+    @Transactional
     public User create(User user) {
         validateFields(user);
         validateEmailUnique(user);
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        log.info("User {} has been added", users.toString().toUpperCase());
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
-    public User update(User user, Integer id) {
-        User oldUser = users.get(id);
-        if (oldUser == null) {
-            throw new NotFoundException("Пользователь не найден");
-        }
+    @Transactional
+    public User update(User user, Long id) {
+        user.setId(id);
+        User oldUser = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
-        // Обновляем только непустые поля
         if (user.getName() != null && !user.getName().isBlank()) {
             oldUser.setName(user.getName());
         }
@@ -44,25 +47,22 @@ public class UserServiceImpl implements UserService {
             validateEmailUnique(user);
             oldUser.setEmail(user.getEmail());
         }
-        return oldUser;
+        return userRepository.save(oldUser);
     }
 
     @Override
-    public User getById(Integer id) {
-        if (!users.containsKey(id)) {
-            throw new NotFoundException("Пользователь не найден");
-        }
-        return users.get(id);
+    @Transactional(readOnly = true)
+    public User getById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
     }
 
     @Override
-    public Boolean deleteById(Integer id) {
-        if (users.containsKey(id)) {
-            users.remove(id);
-            return true;
-        } else {
-            return false;
-        }
+    @Transactional
+    public void deleteById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        userRepository.delete(user);
     }
 
     private void validateFields(User user) {
@@ -75,21 +75,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateEmailUnique(User user) {
-        for (User u : users.values()) {
-            if (u.getId() == user.getId()) {
-                continue;
-            }
-            if (u.getEmail().equals(user.getEmail())) {
+        userRepository.findAll().forEach(u -> {
+            if (!Objects.equals(u.getId(), user.getId()) && u.getEmail().equals(user.getEmail())) {
                 throw new ConflictException("The user email already exists");
             }
-        }
-    }
-
-    private int getNextId() {
-        return users.keySet().stream()
-                .mapToInt(Integer::intValue)
-                .max()
-                .orElse(0) + 1;
+        });
     }
 }
 
