@@ -9,7 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.MapperUser;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -38,7 +38,7 @@ public class UserControllerTest {
     void createUser() {
         userDto = new UserDto(1L, "name", "email@gamil.com");
 
-        when(userService.create(MapperUser.toUser(userDto))).thenReturn(MapperUser.toUser(userDto));
+        when(userService.create(UserMapper.toUser(userDto))).thenReturn(UserMapper.toUser(userDto));
 
         String result = mockMvc.perform(post("/users")
                         .contentType("application/json")

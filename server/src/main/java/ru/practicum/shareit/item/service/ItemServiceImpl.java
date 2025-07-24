@@ -18,7 +18,7 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -26,6 +26,8 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -49,10 +51,12 @@ public class ItemServiceImpl implements ItemService {
         } else {
             item = ItemMapper.toItem(dto, owner, null);
         }
+        assert dto != null;
+        Long requestId = dto.getRequestId();
         assert item != null;
         item.setOwner(owner);
-        if (item.getRequest() != null) {
-            ItemRequest itemRequest = itemRequestRepository.findById(item.getRequest().getId()).orElseThrow(() -> new NotFoundException("Not found item"));
+        if (requestId != null) {
+            ItemRequest itemRequest = itemRequestRepository.findById(requestId).orElseThrow(() -> new NotFoundException("Not found item"));
             item.setRequest(itemRequest);
         }
         return ItemMapper.toItemDto(itemRepository.save(item));
@@ -127,5 +131,14 @@ public class ItemServiceImpl implements ItemService {
         comment.setItem(booking.getItem());
         comment.setCreated(nowDateTime);
         return commentRepository.save(comment);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ItemDto> findAllByRequestId(Long requestId) {
+        List<Item> allItems = itemRepository.findAllByRequestId(requestId);
+        return allItems.stream()
+                .map(ItemMapper::toItemDto)
+                .collect(toList());
     }
 }
