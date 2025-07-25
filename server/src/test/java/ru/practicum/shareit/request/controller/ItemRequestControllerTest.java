@@ -68,7 +68,6 @@ class ItemRequestControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        // Здесь мы можем десериализовать в List<ItemRequest> или просто проверить JSON
         ItemRequest[] requests = objectMapper.readValue(result, ItemRequest[].class);
         assertEquals(1, requests.length);
         assertEquals(itemRequest.getDescription(), requests[0].getDescription());

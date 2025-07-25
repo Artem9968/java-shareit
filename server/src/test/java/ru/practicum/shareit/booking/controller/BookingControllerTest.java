@@ -57,13 +57,11 @@ public class BookingControllerTest {
                 .request(null) // или создайте ItemRequest если нужно
                 .build();
 
-        // Request DTO - минимальные данные для создания бронирования
         bookingDto = new BookingDto();
         bookingDto.setItemId(itemId);
         bookingDto.setStart(LocalDateTime.now().plusDays(1));
         bookingDto.setEnd(LocalDateTime.now().plusDays(2));
 
-        // Domain object - что возвращает сервис
         booking = new Booking();
         booking.setId(bookingId);
         booking.setStart(bookingDto.getStart());

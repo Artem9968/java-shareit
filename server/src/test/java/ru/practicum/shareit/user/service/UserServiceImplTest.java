@@ -13,7 +13,6 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,11 +33,11 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        user = User.builder()
-                .id(1L)
-                .name("Максим")
-                .email("maxim@example.com")
-                .build();
+        // Создаём User через конструктор или сеттеры
+        user = new User();
+        user.setId(1L);
+        user.setName("Максим");
+        user.setEmail("maxim@example.com");
     }
 
     @Test
@@ -79,11 +78,10 @@ class UserServiceImplTest {
     void create_whenDuplicateEmail_thenThrowConflictException() {
         when(userRepository.findAll()).thenReturn(List.of(user));
 
-        User newUser = User.builder()
-                .id(2L)
-                .name("Другой пользователь")
-                .email(user.getEmail())
-                .build();
+        User newUser = new User();
+        newUser.setId(2L);
+        newUser.setName("Другой пользователь");
+        newUser.setEmail(user.getEmail());
 
         assertThatThrownBy(() -> userService.create(newUser))
                 .isInstanceOf(ConflictException.class)
@@ -95,13 +93,12 @@ class UserServiceImplTest {
 
     @Test
     void update_whenUserExists_thenUpdatesFields() {
-        User updateUser = User.builder()
-                .name("Обновлённый")
-                .email("updated@example.com")
-                .build();
+        User updateUser = new User();
+        updateUser.setName("Обновлённый");
+        updateUser.setEmail("updated@example.com");
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(userRepository.findAll()).thenReturn(List.of(user)); // for email unique check
+        when(userRepository.findAll()).thenReturn(List.of(user));
         when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         User result = userService.update(updateUser, user.getId());
@@ -128,18 +125,16 @@ class UserServiceImplTest {
 
     @Test
     void update_whenEmailDuplicate_thenThrowConflict() {
-        User anotherUser = User.builder()
-                .id(2L)
-                .name("Другой")
-                .email("other@example.com")
-                .build();
+        User anotherUser = new User();
+        anotherUser.setId(2L);
+        anotherUser.setName("Другой");
+        anotherUser.setEmail("other@example.com");
 
-        User updateUser = User.builder()
-                .email(anotherUser.getEmail())
-                .build();
+        User updateUser = new User();
+        updateUser.setEmail(anotherUser.getEmail());
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(userRepository.findAll()).thenReturn(List.of(user, anotherUser)); // will detect conflict
+        when(userRepository.findAll()).thenReturn(List.of(user, anotherUser));
 
         assertThatThrownBy(() -> userService.update(updateUser, user.getId()))
                 .isInstanceOf(ConflictException.class)
@@ -193,4 +188,5 @@ class UserServiceImplTest {
         verify(userRepository, never()).delete(any());
     }
 }
+
 
