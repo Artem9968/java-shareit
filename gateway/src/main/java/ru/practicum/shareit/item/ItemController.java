@@ -6,6 +6,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
-@RestController
+@Controller
 @RequestMapping(path = "/items")
 @RequiredArgsConstructor
 @Validated
@@ -48,7 +49,6 @@ public class ItemController {
     public ResponseEntity<Object> updateItem(@PathVariable("itemId") Long itemId,
                                              @RequestBody ItemDto item,
                                              @RequestHeader("X-Sharer-User-Id") Long userId) {
-        checkValidItemForUpdate(item);
         log.info("Update item {}, userId = {}", itemId, userId);
         return client.update(userId, item, itemId);
     }
@@ -82,13 +82,5 @@ public class ItemController {
                                              @PathVariable("itemId") Long itemId) {
         log.info("Create comment {}, userId = {}, for item {}", comment, userId, itemId);
         return client.addComment(userId, itemId, comment);
-    }
-
-    private void checkValidItemForUpdate(ItemDto item) {
-        if (item.getName() != null) {
-            if (item.getName().isBlank()) {
-                // throw new FieldIsNotValidException("Name");
-            }
-        }
     }
 }

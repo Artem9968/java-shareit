@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -33,7 +34,8 @@ public class ItemRequest {
     @JoinColumn(name = "requestor", nullable = false)
     private User requestor;
 
-    @Column(nullable = false)
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime created;
 }
 
