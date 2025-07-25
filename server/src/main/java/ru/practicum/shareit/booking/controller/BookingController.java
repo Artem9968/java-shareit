@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking.controller;
 
-import jakarta.validation.Valid;
+
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class BookingController {
 
     @PostMapping
     public BookingDto create(@RequestHeader(USER_ID_HEADER) Long userId,
-                             @RequestBody @Valid BookingDto bookingDto) {
+                             @RequestBody  BookingDto bookingDto) {
         log.debug("POST /bookings by user ID: {}", userId);
         return BookingMapper.toBookingDto(bookingService.create(bookingDto, userId));
     }

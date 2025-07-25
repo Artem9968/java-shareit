@@ -38,8 +38,6 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final ItemRequestRepository itemRequestRepository;
 
-    private static final List<Status> NEGATIVE_BOOKING_STATUSES =
-            List.of(Status.CANCELED, Status.REJECTED);
 
     @Override
     @Transactional

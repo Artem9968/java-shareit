@@ -77,8 +77,6 @@ public class UserControllerTest {
 
         verify(userService, times(1)).deleteById(userId);
     }
-
-
 }
 
 
